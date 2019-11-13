@@ -1,43 +1,43 @@
 #include <iostream>
-
-#include "tester/tester.h"
+#include "matrix.h"
 
 int main() {
-	//Tester::execute();
-	Matrix<int> sparse(3,3);
-    
-    
-    sparse.set(2,1,20);
 
-    sparse.set(1,0,5);
+	Matrix<int> sparse;
+    Matrix<int> sparse2;
+    Matrix<int> pruebas;
 
-    sparse.set(2,1,550);
 
-  
-    sparse.set(2,2,22);
+    //READ FROM A TXT;
+    sparse<<"matrix1.txt";
 
-    Matrix<int> scalar = sparse*2;
-    sparse.set(0,1,20);
-    scalar.set(1,2,88);
-    scalar.set(0,2,15);
+    sparse2<<"matrix2.txt";
+
     cout<<"------------------MATRIZ 1-------------"<<endl;
-   	scalar.print();
-    cout<<"------------------MATRIZ 2-------------"<<endl;
-    sparse.print();
-    
 
+   	cout<<sparse;
+    cout<<"------------------MATRIZ 2-------------"<<endl;
+
+    cout<<sparse2;
     cout<<"-------------------SUMA---------------"<<endl;
-    Matrix<int> nuevo = scalar + sparse;
-    nuevo.print();
+    pruebas = sparse + sparse2;
+
+    cout<<pruebas;
     cout<<"-------------------RESTA--------------"<<endl;
-    Matrix<int> nuevoResta = scalar - sparse;
-    nuevoResta.print();
+    pruebas = sparse - sparse2;
+    cout<<pruebas;
+    
     cout<<"--------------TRANSPUESTA-------------"<<endl;
-    Matrix<int> nuevoTranspuesta = nuevoResta.transpose();
-    nuevoTranspuesta.print();
+    pruebas = sparse.transpose();
+    cout<<pruebas;
+    
     cout<<"------------MULTIPLICACION-------------"<<endl;
-    Matrix<int> nuevoMult = nuevoTranspuesta*nuevoTranspuesta;
-    nuevoMult.print();
+    //pruebas = sparse * sparse2;
+    //cout<<pruebas;
+
+    cout<<"-------MULTIPLICACION ESCALAR----------"<<endl;
+    pruebas = sparse*2;
+    cout<<pruebas;
     return 0;
 }
 

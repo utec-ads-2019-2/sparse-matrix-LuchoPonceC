@@ -5,13 +5,14 @@
 #include <vector>
 #include <iostream>
 #include <iomanip>
+#include <fstream>
 using namespace std;
 
 template <typename T>
 class Matrix {
 private:
     Node<T> *root;
-    unsigned rows, columns;
+    
     
 
     void column_insert(unsigned posy,T &data, Node<T> *& temp);
@@ -19,7 +20,9 @@ private:
 
 
 public:
+    unsigned rows, columns;
     vector<Node<T>*> Ro,Co;
+    Matrix(){}
     Matrix(unsigned rows, unsigned columns);
     unsigned get_rows(){return rows;}
     unsigned get_columns(){return columns;}
@@ -30,20 +33,82 @@ public:
     Matrix<T> operator*(Matrix<T> &other) const;//listo
     Matrix<T> operator+(Matrix<T> &other) const;//listo
     Matrix<T> operator-(Matrix<T> &other) const;//listo
-    Matrix<T> operator=(Matrix<T> *other) const;
+    void operator=(Matrix<T> other) ;
     Matrix<T> transpose();//listo
     void print() const;//listo
-
+    void operator<<(string path);
     ~Matrix();
 };
 
+
+template <typename T>
+void Matrix<T>::operator<<(string path){
+    ifstream myfile;
+    myfile.open(path);
+    string line;
+    bool act=false;
+    int tr,tc;
+    int r=0,c=0,val;  
+    while(getline(myfile,line)){
+        istringstream newline(line);
+        
+
+        if(act == false){
+            newline>>tr>>tc;
+            columns = tc;
+            rows = tr;
+            this->Co.resize(tr,nullptr);
+            this->Ro.resize(tc,nullptr);
+
+            act=true;
+            continue;
+        }
+        else{
+            while(newline>>val){
+                if(val!=0){
+                  this->set(r,c,val);  
+                }
+                c++;
+            }
+            c=0;
+            r++;
+        }
+    }
+    myfile.close();
+
+}
+
+
+
+template <typename T>
+ostream& operator<<(std::ostream& os, const Matrix<T>& M){
+    M.print();
+    return os;
+}
+
+template <typename T>
+void Matrix<T>::operator=(Matrix<T> other) {
+    this->Ro.clear();
+    this->Co.clear();
+    columns = other.columns;
+    rows = other.rows;
+    Ro.resize(other.rows,nullptr);
+    Co.resize(other.columns,nullptr);
+    for(auto itRo : other.Ro){
+        while(itRo!=nullptr){
+            this->set(itRo->get_posx(),itRo->get_posy(),(itRo->get_data()));
+            itRo=itRo->next;
+        }
+
+    }
+    
+}
 
 
 template <typename T>
 Matrix<T>::~Matrix(){
 
     for(auto itRo : Ro){
-        //cout<<itRo->get_data()<<endl;
         itRo->killSelf();
     }
     Ro.clear();
@@ -55,9 +120,9 @@ Matrix<T> Matrix<T>::operator*(Matrix<T> &other) const{
     Matrix<T> Temp = Matrix<T>(this->rows,this->columns);
     Node<T>*const*itRo = nullptr;
     Node<T>*const*itCo = nullptr;
-    for(int i=0;i<(this->Ro).size();i++){
+    for(int i=0;i<rows;i++){
 
-        for(int j=0;j<(this->Co).size();j++){
+        for(int j=0;j<columns;j++){
 
             itCo = &((this->Co)[j]);
             itRo = &((this->Ro)[i]);
@@ -66,10 +131,21 @@ Matrix<T> Matrix<T>::operator*(Matrix<T> &other) const{
 
             while((*itRo)!=nullptr and (*itCo)!=nullptr){
                 
-                if((*itRo)->get_posy()==(*itCo)->get_posx()){
+                if((*itCo)==nullptr and (*itRo)!=nullptr){
+                    itRo = &(*itRo)->next;
+                    continue;
+                }
+                if((*itCo)==nullptr and (*itCo)!=nullptr){
+                
+                    itCo = &(*itCo)->down;
+                    continue;
+                }
+
+
+                if(((*itRo)->get_posx()==(*itCo)->get_posy())and(*itRo)->get_posy()==(*itCo)->get_posx()){
 
                     valor += ((*itRo)->get_data())*((*itCo)->get_data());
-                    
+                    cout<<(*itRo)->get_posx()<<"-"<<(*itRo)->get_posy()<<" "<<(*itCo)->get_posx()<<"-"<<(*itCo)->get_posy()<<" "<<valor<<endl;
                     itRo = &(*itRo)->next;
                     itCo = &(*itCo)->down;
                     continue;
@@ -199,10 +275,9 @@ Matrix<T> Matrix<T>::operator-(Matrix<T> &other) const{
 
         while((*it1)!=nullptr or (*it2)!=nullptr){
 
-            //cout<<&(*it1)<<"-"<<&(*it2)<<endl;
 
             if((*it1)==nullptr){
-                //cout<<"entro en lo primero"<<endl;
+
                 Temp.set((*it2)->get_posx(),(*it2)->get_posy(),-(*it2)->get_data());
                 it2 = &(*it2)->next;
                 continue;
@@ -210,16 +285,20 @@ Matrix<T> Matrix<T>::operator-(Matrix<T> &other) const{
             }
 
             if((*it2)==nullptr){
-                //cout<<"entro en lo segundo"<<endl;
+
                 Temp.set((*it1)->get_posx(),(*it1)->get_posy(),(*it1)->get_data());
                 it1 = &(*it1)->next;
                 continue;
             }
 
             if((*it1)->get_posy()==(*it2)->get_posy()){
-                //cout<<"entro aca"<<endl;
-                //cout<<(*it1)->get_posx()<<" - "<<(*it1)->get_posy()<<" "<<(*it1)->get_data()<<" "<<(*it2)->get_data()<<endl;
-                Temp.set((*it1)->get_posx(),(*it1)->get_posy(),((*it1)->get_data()-(*it2)->get_data()));
+                T valor = 0;
+                valor = ((*it1)->get_data()-(*it2)->get_data());
+
+                if(valor!=0){
+                    Temp.set((*it1)->get_posx(),(*it1)->get_posy(),((*it1)->get_data()-(*it2)->get_data()));
+                 
+                }
                 it1 = &(*it1)->next;
                 it2 = &(*it2)->next;
                 continue;
@@ -253,6 +332,7 @@ Matrix<T> Matrix<T>::operator-(Matrix<T> &other) const{
 
 template <typename T>
 Matrix<T>::Matrix(unsigned rows, unsigned columns) : rows(rows), columns(columns){
+
     Ro.resize(rows,nullptr);
     Co.resize(columns,nullptr);
     
@@ -353,6 +433,7 @@ void Matrix<T>::print() const{
             for(;posact<it->get_posy();posact++){
                 cout<<setw(6)<<"0";
             }
+
             posact=it->get_posy() + 1;
             cout<<setw(6)<<it->get_data();
             it = it->next;
