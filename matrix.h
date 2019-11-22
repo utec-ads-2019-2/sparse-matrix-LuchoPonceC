@@ -386,6 +386,7 @@ void Matrix<T>::row_insert(unsigned posx,T &dat,Node<T> *& temp){
 
         if(temp->get_data()==0){
             if(*findRow==nullptr or temp->get_posy()!=(*findRow)->get_posy() )throw exception();
+            // Falta eliminar el elemento
             Node<T> *del = (*findRow);
             (*findRow)=(*findRow)->next;
             return;
